@@ -1,31 +1,21 @@
-FROM php:8.2-apache
+# Usamos la versión CLI de PHP, que es más ligera y no trae Apache
+FROM php:8.2-cli
 
-# 1. Instalar dependencias y limpiar
+# 1. Instalar dependencias para PostgreSQL
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. SOLUCIÓN MPM (Evita el crash inicial)
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_event.conf \
-    && rm -f /etc/apache2/mods-enabled/mpm_worker.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_worker.conf \
-    && a2enmod mpm_prefork rewrite
+# 2. Copiar todo el proyecto al contenedor
+WORKDIR /app
+COPY . .
 
-# 3. CONFIGURACIÓN DE RUTAS (Aquí está la magia para el 404)
-# Definimos que la raíz de la web sea la carpeta /public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+# 3. Informar a Railway qué puerto usar (por defecto 8080 si no hay variable)
+ENV PORT=8080
+EXPOSE ${PORT}
 
-# Modificamos la configuración de Apache para usar esa ruta
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# 4. Copiar TODO el código
-COPY . /var/www/html/
-
-# 5. Dar permisos (Crucial para que Apache pueda leer los archivos)
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
-
-EXPOSE 80
+# 4. Comando de inicio: 
+# Usamos el servidor integrado de PHP apuntando a la carpeta /public
+# Si tu index.php está en la raíz, quita "/public" del final del comando
+CMD php -S 0.0.0.0:${PORT} -t public/
