@@ -6,11 +6,11 @@ $databaseUrl = "postgresql://postgres:eYmLnUcbLPPaufppwTnKQCiziBAzJeCO@mainline.
 $dbConfig = parse_url($databaseUrl);
 
 // Extraemos los datos necesarios
-$host   = $dbConfig['host'];
-$user   = $dbConfig['user'];
-$pass   = $dbConfig['pass'];
-$port   = $dbConfig['port'] ?? 5432; // Puerto por defecto de Postgres
-$dbname = ltrim($dbConfig['path'], '/');
+$host   = getenv('DB_HOST');
+$user   = getenv('DB_USER');
+$pass   = getenv('DB_PASSWORD');
+$port   = getenv('DB_PORT');
+$dbname = getenv('DB_NAME');
 
 // Construimos el DSN (Data Source Name)
 $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
