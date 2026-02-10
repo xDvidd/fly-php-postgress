@@ -1,19 +1,18 @@
 FROM php:8.2-cli
 
-# Instalar drivers de Postgres
+# 1. Instalar drivers de Postgres
 RUN apt-get update && apt-get install -y libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
-# Establecemos el directorio de trabajo
+# 2. Directorio de trabajo
 WORKDIR /app
 
-# Copiamos todo el contenido del repo a /app
+# 3. Copiamos todos los archivos del repo al contenedor
 COPY . .
 
-# Railway usa el puerto 8080 por defecto en muchos casos
-ENV PORT 8080
+# 4. Exponemos el puerto 8080
 EXPOSE 8080
 
-# COMANDO DE ARRANQUE:
-# Este comando le dice a PHP: "Sirve lo que haya en la raíz de la carpeta /app"
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "."]
+# 5. COMANDO CLAVE:
+# Le decimos a PHP que su "Document Root" es la carpeta src/
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "src/"]
